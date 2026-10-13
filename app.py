@@ -1,4 +1,5 @@
 import io
+from datetime import date
 import hmac
 import requests
 import base64
@@ -344,9 +345,9 @@ elif section == "🔎 Tra cứu số liệu":
     st.caption("Tra cứu từ nguồn dữ liệu đã chọn ở menu bên trái: Excel đang tải lên hoặc kho đã lưu.")
     c1,c2 = st.columns(2)
     with c1:
-        lookup_start = st.date_input("Từ ngày", value=first_date, min_value=first_date, max_value=last_date, key="lookup_from")
+        lookup_start = st.date_input("Từ ngày", value=first_date, min_value=date(1900, 1, 1), max_value=date(2100, 12, 31), key="lookup_from")
     with c2:
-        lookup_end = st.date_input("Đến ngày", value=last_date, min_value=first_date, max_value=last_date, key="lookup_to")
+        lookup_end = st.date_input("Đến ngày", value=last_date, min_value=date(1900, 1, 1), max_value=date(2100, 12, 31), key="lookup_to")
     if lookup_start > lookup_end:
         st.error("Ngày bắt đầu phải trước hoặc bằng ngày kết thúc.")
     else:
@@ -355,6 +356,8 @@ elif section == "🔎 Tra cứu số liệu":
         if search_metric != "Cả ba chỉ tiêu":
             lookup = lookup[[COL_DATE, METRICS[search_metric][0]]]
         st.metric("Số ngày tìm thấy",len(lookup))
+        if lookup.empty:
+            st.info("Không có dữ liệu trong khoảng thời gian đã chọn.")
         st.dataframe(lookup,use_container_width=True,hide_index=True)
         if not lookup.empty:
             st.download_button("📥 Xuất kết quả tra cứu (.csv)",lookup.to_csv(index=False).encode("utf-8-sig"),
