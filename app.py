@@ -16,7 +16,7 @@ hero_image = image_css("anh_ho_chua_dau_trang.jpg")
 sidebar_image = image_css("anh_ho_chua_menu.jpg")
 st.markdown(f"""<style>
 :root {{--navy:#0c3158;--blue:#0e72ce}}
-[data-testid="stAppViewContainer"] {{background:#f2f6fb}}
+[data-testid="stAppViewContainer"] {{background:#f0f5fb}}
 [data-testid="stSidebar"] {{
  background:linear-gradient(180deg,#06284e 0%,#0c4c86 57%,rgba(7,35,65,.20) 100%),url("data:image/jpeg;base64,{sidebar_image}") bottom center / 100% auto no-repeat,#092d53;
  border-right:1px solid #ffffff22;
@@ -25,31 +25,58 @@ st.markdown(f"""<style>
 [data-testid="stSidebar"] div[data-baseweb="select"] * {{color:#102d49!important}}
 [data-testid="stSidebar"] input {{color:#142e48!important}}
 [data-testid="stSidebar"] textarea {{color:#142e48!important}}
-.block-container {{max-width:1550px;padding-top:1.0rem;padding-bottom:2rem}}
+.block-container {{max-width:1680px;padding-top:.55rem;padding-bottom:2rem}}
 h1,h2,h3 {{color:#0b3d70!important;letter-spacing:-.02em}}
-div[data-testid="stMetric"] {{background:#fff;border:1px solid #dce8f5;border-radius:14px;padding:13px 16px;box-shadow:0 3px 13px #133d6610}}
+div[data-testid="stMetric"] {{background:#fff;border:1px solid #d9e7f4;border-radius:11px;padding:15px 18px;box-shadow:0 4px 15px #143e6610}}
 div[data-testid="stMetricLabel"] {{color:#5b7187}}
 div[data-testid="stMetricValue"] {{color:#123f6b}}
 div[data-testid="stVerticalBlockBorderWrapper"] > div {{border-radius:16px!important}}
 .stButton>button[kind="primary"], .stDownloadButton>button[kind="primary"] {{background:#0878d7;border-radius:9px}}
 [data-testid="stDataFrame"] {{border-radius:10px;overflow:hidden}}
-.hero {{padding:22px 30px;border-radius:15px;color:white;background:linear-gradient(90deg,#06274c 0%,#083f70 34%,rgba(8,53,88,.25) 100%),url("data:image/jpeg;base64,{hero_image}") center / cover no-repeat,#0a3a66;margin-bottom:18px;box-shadow:0 8px 24px #15467522;min-height:135px;display:flex;flex-direction:column;justify-content:center}}
-.hero h1 {{color:white!important;margin:0;font-size:2.05rem}}
+.hero {{padding:28px 34px;border-radius:13px;color:white;background:linear-gradient(90deg,#06274c 0%,#083f70 34%,rgba(8,53,88,.25) 100%),url("data:image/jpeg;base64,{hero_image}") center / cover no-repeat,#0a3a66;margin-bottom:18px;box-shadow:0 8px 24px #15467522;min-height:160px;display:flex;flex-direction:column;justify-content:center}}
+.hero h1 {{color:white!important;margin:0;font-size:2.35rem}}
 .hero .brand {{font-size:1.0rem;font-weight:800;letter-spacing:.24em;color:#a7e5ff;margin-bottom:9px;text-transform:uppercase}}
 .hero p {{color:#d4eafb;margin:6px 0 0}}
-.section {{font-size:1.12rem;font-weight:750;color:#0d457a;margin:12px 0}}
+.section {{font-size:1.09rem;font-weight:800;color:#095098;margin:7px 0 13px;letter-spacing:.01em}}
 .note {{color:#60768d;font-size:.87rem}}
 [data-testid="stSidebar"] div[role="radiogroup"] label:has(input:checked) {{background:#1479db;border-radius:10px}}
 [data-testid="stSidebar"] div[role="radiogroup"] label {{padding:7px 10px;transition:background .2s}}
-div[data-testid="stMetric"] {{border-top:3px solid #1983d8}}
+div[data-testid="stMetric"] {{border-top:3px solid #1678d5}}
 div[data-testid="stVerticalBlockBorderWrapper"] {{box-shadow:0 4px 16px #0c467010}}
 .stDownloadButton button {{border-radius:9px}}
+/* Professional UI polish: color-coded bottom cards and controls */
+[data-testid="stMainBlockContainer"] .stButton>button {{border-radius:9px;font-weight:700}}
+[data-testid="stMainBlockContainer"] .stDownloadButton>button {{background:#04a875;color:white;border:0;font-weight:750}}
+[data-testid="stMainBlockContainer"] .stDownloadButton>button:hover {{background:#078968;color:white}}
+[data-testid="stMainBlockContainer"] div[data-testid="stVerticalBlockBorderWrapper"]:has(.section) {{
+ border:1px solid #dce7f2!important;background:#fff!important;
+}}
+[data-testid="stMainBlockContainer"] div[data-testid="stHorizontalBlock"]:has(.stSelectbox) > div:nth-child(1) div[data-testid="stVerticalBlockBorderWrapper"] {{
+ background:linear-gradient(130deg,#fff4f5,#ffebee)!important;border-color:#ffdade!important;
+}}
+[data-testid="stMainBlockContainer"] div[data-testid="stHorizontalBlock"]:has(.stSelectbox) > div:nth-child(2) div[data-testid="stVerticalBlockBorderWrapper"] {{
+ background:linear-gradient(130deg,#f0f8ff,#e6f2ff)!important;border-color:#d2e7fc!important;
+}}
+[data-testid="stMainBlockContainer"] div[data-testid="stHorizontalBlock"]:has(.stSelectbox) > div:nth-child(3) div[data-testid="stVerticalBlockBorderWrapper"] {{
+ background:linear-gradient(130deg,#effbf3,#e0f7e9)!important;border-color:#c8eed6!important;
+}}
+[data-testid="stSidebar"] .stRadio label {{font-weight:600}}
+[data-testid="stSidebar"] [data-testid="stMarkdownContainer"] h2 {{color:white!important}}
+[data-testid="stSidebar"] [data-testid="stMarkdownContainer"] h3 {{color:#d6eaff!important}}
+[data-testid="stSidebar"] div[data-testid="stTextInput"] label {{color:#eaf4ff!important}}
+[data-testid="stSidebar"] div[data-testid="stNumberInput"] label {{color:#eaf4ff!important}}
+[data-testid="stSidebar"] [data-testid="stSidebarContent"] {{padding-top:1.1rem}}
+[data-testid="stMainBlockContainer"] .stDataFrame {{border:1px solid #dbe7f3}}
+@media (max-width:900px) {{
+ .hero {{min-height:115px;padding:16px 20px}}
+ .hero h1 {{font-size:1.55rem}}
+}}
 </style>""",unsafe_allow_html=True)
-st.markdown('<div class="hero"><div class="brand">VINH TRAN APP</div><h1>🌊 THỦY VĂN P-III <span style="font-size:15px;background:#ffffff24;padding:5px 10px;border-radius:15px">PRO 3.2</span></h1><p>PHÂN TÍCH TẦN SUẤT THỦY VĂN • PEARSON III • BẢNG TÍNH THIẾT KẾ</p></div>',unsafe_allow_html=True)
+st.markdown('<div class="hero"><div class="brand">VINH TRAN APP</div><h1>🌊 THỦY VĂN P-III <span style="font-size:15px;background:#ffffff24;padding:5px 10px;border-radius:15px">PRO 3.3</span></h1><p>PHÂN TÍCH TẦN SUẤT THỦY VĂN • PEARSON III • BẢNG TÍNH THIẾT KẾ</p></div>',unsafe_allow_html=True)
 
 with st.sidebar:
     st.markdown("## 🌊 VINH TRAN APP")
-    st.caption("THỦY VĂN P-III • PHIÊN BẢN 3.2")
+    st.caption("THỦY VĂN P-III • PHIÊN BẢN 3.3")
     section=st.radio("DANH MỤC",["🏠 Tổng quan","📋 Nhập số liệu","📊 Phân tích thống kê","📈 Đường tần suất P-III","📘 Bảng tra Φp","📥 Xuất kết quả","❔ Hướng dẫn"],label_visibility="collapsed")
     st.divider()
     st.markdown("### ⚙️ THIẾT LẬP")
@@ -115,10 +142,10 @@ def prob_x(p):
 p_line = np.linspace(.05,99.95,1000)
 q_line = qp(p_line)
 fig = go.Figure()
-fig.add_trace(go.Scatter(x=prob_x(p_line), y=q_line, mode='lines', name='Đường lý luận P-III', line=dict(color='#ed3545',width=3.2), customdata=p_line, hovertemplate='P=%{customdata:.2f}%<br>Q=%{y:.2f}<extra></extra>'))
+fig.add_trace(go.Scatter(x=prob_x(p_line), y=q_line, mode='lines', name='Đường lý luận P-III', line=dict(color='#f32440',width=3.2), customdata=p_line, hovertemplate='P=%{customdata:.2f}%<br>Q=%{y:.2f}<extra></extra>'))
 fig.add_trace(go.Scatter(x=prob_x(emp_p), y=emp_q, mode='markers', name='Điểm kinh nghiệm', marker=dict(color='#1479d4',size=9,line=dict(color='white',width=1)), customdata=emp_p, hovertemplate='P=%{customdata:.2f}%<br>Quan trắc=%{y:.2f}<extra></extra>'))
 ticks=np.array([.1,.2,.5,1,2,5,10,20,50,75,90,95,99])
-fig.update_layout(height=480,template='plotly_white',xaxis=dict(title='Tần suất vượt P (%) — trục xác suất chuẩn',tickmode='array',tickvals=prob_x(ticks),ticktext=[f'{x:g}' for x in ticks],autorange='reversed'),yaxis_title=f'Giá trị ({unit})',legend=dict(orientation='h',y=1.1),margin=dict(l=12,r=12,t=45,b=30),paper_bgcolor='white',plot_bgcolor='white',font=dict(color='#34516c'))
+fig.update_layout(height=455,template='plotly_white',xaxis=dict(title='Tần suất vượt P (%) — trục xác suất chuẩn',tickmode='array',tickvals=prob_x(ticks),ticktext=[f'{x:g}' for x in ticks],autorange='reversed'),yaxis_title=f'Giá trị ({unit})',legend=dict(orientation='h',y=1.1),margin=dict(l=12,r=12,t=45,b=30),paper_bgcolor='white',plot_bgcolor='white',font=dict(color='#34516c'))
 
 
 
@@ -211,4 +238,4 @@ else:
     st.warning("Công cụ tham khảo, chưa được kiểm định theo quy chuẩn thiết kế và bảng tra Việt Nam.")
 
 st.divider()
-st.caption("HYDROSTAT PRO 3.2 • Phân phối P-III qua Gamma • Số liệu mẫu không dùng cho thiết kế chính thức. Không dùng kết quả để phê duyệt công trình khi chưa được kiểm chứng.")
+st.caption("HYDROSTAT PRO 3.3 • Phân phối P-III qua Gamma • Số liệu mẫu không dùng cho thiết kế chính thức. Không dùng kết quả để phê duyệt công trình khi chưa được kiểm chứng.")
