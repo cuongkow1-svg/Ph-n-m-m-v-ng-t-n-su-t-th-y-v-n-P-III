@@ -1,4 +1,6 @@
 import io
+import hmac
+import requests
 import base64
 from pathlib import Path
 import numpy as np
@@ -72,7 +74,7 @@ div[data-testid="stVerticalBlockBorderWrapper"] {{box-shadow:0 4px 16px #0c46701
  .hero h1 {{font-size:1.55rem}}
 }}
 </style>""",unsafe_allow_html=True)
-st.markdown('<div class="hero"><div class="brand">VINH TRAN APP</div><h1>🌊 THỦY VĂN P-III <span style="font-size:15px;background:#ffffff24;padding:5px 10px;border-radius:15px">PRO 4.0</span></h1><p>QUAN TRẮC Q · H · MƯA HẰNG NGÀY • TẦN SUẤT PEARSON III</p></div>',unsafe_allow_html=True)
+st.markdown('<div class="hero"><div class="brand">VINH TRAN APP</div><h1>🌊 THỦY VĂN P-III <span style="font-size:15px;background:#ffffff24;padding:5px 10px;border-radius:15px">PRO 4.1</span></h1><p>QUAN TRẮC Q · H · MƯA HẰNG NGÀY • TẦN SUẤT PEARSON III</p></div>',unsafe_allow_html=True)
 
 
 COL_DATE = "Ngày"
@@ -115,13 +117,13 @@ def parse_daily_excel(uploaded_file):
 
 with st.sidebar:
     st.markdown("## 🌊 VINH TRAN APP")
-    st.caption("THỦY VĂN P-III • PHIÊN BẢN 4.0")
-    section = st.radio("DANH MỤC", ["🏠 Tổng quan", "📅 Quan trắc hằng ngày", "📋 Nhập số liệu", "📊 Thống kê năm", "📈 Đường tần suất P-III", "📘 Bảng Φp", "📥 Xuất kết quả", "❔ Hướng dẫn"], label_visibility="collapsed")
+    st.caption("THỦY VĂN P-III • PHIÊN BẢN 4.1")
+    section = st.radio("DANH MỤC", ["🏠 Tổng quan", "🔎 Tra cứu số liệu", "💾 Kho dữ liệu", "📅 Quan trắc hằng ngày", "📋 Nhập số liệu", "📊 Thống kê năm", "📈 Đường tần suất P-III", "📘 Bảng Φp", "📥 Xuất kết quả", "❔ Hướng dẫn"], label_visibility="collapsed")
     st.divider()
     st.markdown("### ⚙️ DỰ ÁN & DỮ LIỆU")
     project = st.text_input("Tên dự án", "Công trình thủy văn")
     location = st.text_input("Vị trí", "")
-    source = st.radio("Nguồn dữ liệu", ["Dữ liệu mẫu", "Tải Excel theo ngày"])
+    source = st.radio("Nguồn dữ liệu", ["Dữ liệu mẫu", "Tải Excel theo ngày", "Dữ liệu đã lưu"])
     uploaded = st.file_uploader("Tải Excel (.xlsx)", type=["xlsx"], help="Gồm Ngày, Q (m³/s), H (m), Mưa (mm)") if source == "Tải Excel theo ngày" else None
     st.divider()
     metric_name = st.selectbox("Phân tích tần suất cho", list(METRICS.keys()))
@@ -131,7 +133,9 @@ with st.sidebar:
     else:
         aggregation = "Giá trị lớn nhất năm"
 
-if source == "Tải Excel theo ngày" and uploaded is None:
+if source == "Dữ liệu đã lưu":
+    daily = None
+elif source == "Tải Excel theo ngày" and uploaded is None:
     st.info("Chưa có Excel được tải lên. Đang hiển thị dữ liệu mẫu để bạn thử các chức năng.")
     daily = example_data()
 elif uploaded is not None:
@@ -142,6 +146,81 @@ elif uploaded is not None:
         st.stop()
 else:
     daily = example_data()
+
+# KHO LƯU TRỮ BỀN VỮNG: Supabase PostgREST, không dùng SQLite cục bộ trên Streamlit Cloud.
+# Chỉ truy cập bằng service role key ở phía máy chủ, có lớp mật khẩu ứng dụng.
+def secret(name):
+    try:
+        return str(st.secrets.get(name, "")).strip()
+    except Exception:
+        return ""
+
+DB_URL = secret("SUPABASE_URL").rstrip("/")
+DB_KEY = secret("SUPABASE_SERVICE_ROLE_KEY")
+APP_PASSWORD = secret("APP_PASSWORD")
+db_configured = bool(DB_URL and DB_KEY and APP_PASSWORD)
+
+def db_request(method, params=None, payload=None):
+    if not db_configured:
+        raise RuntimeError("Chưa cấu hình Supabase và mật khẩu trong Streamlit Secrets.")
+    headers = {"apikey": DB_KEY, "Authorization": f"Bearer {DB_KEY}", "Content-Type":"application/json",
+               "Prefer":"resolution=merge-duplicates,return=minimal"}
+    resp = requests.request(method, DB_URL + "/rest/v1/hydro_daily", headers=headers,
+                            params=params, json=payload, timeout=25)
+    resp.raise_for_status()
+    return resp.json() if resp.content else []
+
+def check_access():
+    if not db_configured:
+        st.warning("Chưa kết nối kho lưu trữ. Bạn vẫn tra cứu Excel được; muốn lưu lâu dài cần cấu hình Supabase theo HƯỚNG_DẪN_4_1.txt.")
+        return False
+    typed = st.text_input("Mật khẩu quản trị kho dữ liệu", type="password", key="db_pass")
+    if not typed or not hmac.compare_digest(typed, APP_PASSWORD):
+        st.info("Nhập mật khẩu quản trị để đọc hoặc lưu dữ liệu trên kho trực tuyến.")
+        return False
+    return True
+
+def read_db():
+    rows = []
+    offset = 0
+    while True:
+        chunk = db_request("GET", params={"select":"obs_date,q,h,rain","order":"obs_date.asc",
+                                           "limit":1000,"offset":offset})
+        rows.extend(chunk)
+        if len(chunk) < 1000:
+            break
+        offset += len(chunk)
+    if not rows:
+        return pd.DataFrame(columns=[COL_DATE]+[v[0] for v in METRICS.values()])
+    result = pd.DataFrame(rows).rename(columns={"obs_date":COL_DATE,"q":"Q (m³/s)","h":"H (m)","rain":"Mưa (mm)"})
+    result[COL_DATE] = pd.to_datetime(result[COL_DATE])
+    return result
+
+def save_db(df):
+    records = []
+    for row in df.itertuples(index=False, name=None):
+        date, q, h, rain = row
+        def number(v):
+            return None if pd.isna(v) else float(v)
+        records.append({"obs_date":pd.Timestamp(date).strftime("%Y-%m-%d"),
+                        "q":number(q),"h":number(h),"rain":number(rain)})
+    for i in range(0,len(records),300):
+        db_request("POST",params={"on_conflict":"obs_date"},payload=records[i:i+300])
+
+if source == "Dữ liệu đã lưu":
+    if not db_configured:
+        st.error("Chưa cấu hình kho Supabase. Xem file HƯỚNG_DẪN_4_1.txt trong ZIP.")
+        st.stop()
+    if not check_access():
+        st.stop()
+    try:
+        daily = read_db()
+    except Exception as exc:
+        st.error(f"Không tải được dữ liệu từ kho: {exc}")
+        st.stop()
+    if daily.empty:
+        st.info("Kho chưa có dữ liệu. Hãy chọn Tải Excel theo ngày, vào Kho dữ liệu và lưu lên kho.")
+        st.stop()
 
 # Display date as datetime; never silently replace a user's uploaded data with the sample.
 first_date = daily[COL_DATE].min().date()
@@ -260,6 +339,52 @@ if section == "🏠 Tổng quan":
     with st.container(border=True):
         st.markdown('<div class="section">📥 XUẤT KẾT QUẢ</div>', unsafe_allow_html=True)
         show_export()
+elif section == "🔎 Tra cứu số liệu":
+    st.subheader("🔎 Tra cứu Q – H – Mưa theo ngày")
+    st.caption("Tra cứu từ nguồn dữ liệu đã chọn ở menu bên trái: Excel đang tải lên hoặc kho đã lưu.")
+    c1,c2 = st.columns(2)
+    with c1:
+        lookup_start = st.date_input("Từ ngày", value=first_date, min_value=first_date, max_value=last_date, key="lookup_from")
+    with c2:
+        lookup_end = st.date_input("Đến ngày", value=last_date, min_value=first_date, max_value=last_date, key="lookup_to")
+    if lookup_start > lookup_end:
+        st.error("Ngày bắt đầu phải trước hoặc bằng ngày kết thúc.")
+    else:
+        lookup = daily.loc[daily[COL_DATE].dt.date.between(lookup_start,lookup_end)].copy()
+        search_metric = st.selectbox("Chỉ tiêu cần xem", ["Cả ba chỉ tiêu"]+list(METRICS.keys()))
+        if search_metric != "Cả ba chỉ tiêu":
+            lookup = lookup[[COL_DATE, METRICS[search_metric][0]]]
+        st.metric("Số ngày tìm thấy",len(lookup))
+        st.dataframe(lookup,use_container_width=True,hide_index=True)
+        if not lookup.empty:
+            st.download_button("📥 Xuất kết quả tra cứu (.csv)",lookup.to_csv(index=False).encode("utf-8-sig"),
+                               file_name="Tra_cuu_thuy_van.csv",mime="text/csv",key="lookup_csv")
+            numeric = lookup.select_dtypes(include="number")
+            if not numeric.empty:
+                for c in numeric.columns:
+                    idxmax = numeric[c].idxmax()
+                    st.write(f"**{c}:** lớn nhất {numeric.loc[idxmax,c]:,.2f} vào {lookup.loc[idxmax,COL_DATE]:%d/%m/%Y}")
+elif section == "💾 Kho dữ liệu":
+    st.subheader("💾 Lưu và tra cứu dữ liệu lâu dài")
+    st.info("Kho trực tuyến dùng Supabase. Tải Excel lên trước, sau đó bấm lưu. Trùng ngày sẽ cập nhật theo dữ liệu Excel mới.")
+    if check_access():
+        if source == "Dữ liệu mẫu":
+            st.warning("Không cho lưu dữ liệu mẫu vào kho. Hãy chọn Tải Excel theo ngày.")
+        elif source == "Tải Excel theo ngày" and uploaded is None:
+            st.warning("Bạn chưa tải file Excel.")
+        elif source == "Tải Excel theo ngày":
+            st.write(f"Chuẩn bị lưu **{len(daily):,} ngày** từ Excel.")
+            confirm = st.checkbox("Tôi xác nhận đây là số liệu cần lưu/cập nhật", key="confirm_db")
+            if st.button("💾 Lưu dữ liệu lên kho",type="primary",disabled=not confirm):
+                try:
+                    save_db(daily)
+                    st.success(f"Đã lưu/cập nhật {len(daily):,} ngày lên Supabase.")
+                except Exception as exc:
+                    st.error(f"Không lưu được: {exc}")
+        else:
+            st.success(f"Đang đọc {len(daily):,} ngày từ kho dữ liệu.")
+            st.dataframe(daily.tail(20),use_container_width=True,hide_index=True)
+    st.caption("Không công khai mật khẩu hoặc service role key. Dữ liệu lưu trong Supabase, không phụ thuộc máy quán net.")
 elif section == "📅 Quan trắc hằng ngày":
     st.subheader("📅 Diễn biến Q, H và lượng mưa theo ngày")
     show_daily_chart()
@@ -268,7 +393,7 @@ elif section == "📋 Nhập số liệu":
     st.subheader("📋 Nhập và kiểm tra dữ liệu ngày")
     st.info("File Excel cần có 4 cột: Ngày, Q (m³/s), H (m), Mưa (mm). Chọn 'Tải Excel theo ngày' ở thanh bên trái để cập nhật.")
     st.dataframe(daily, use_container_width=True, hide_index=True)
-    st.caption("Bạn có thể bổ sung ngày mới vào file Excel gốc và tải lại. Dữ liệu chưa được lưu tự động trên máy chủ.")
+    st.caption("Bạn có thể bổ sung ngày mới vào file Excel gốc và tải lại. Để lưu lâu dài, vào mục Kho dữ liệu và cấu hình Supabase.")
 elif section == "📊 Thống kê năm":
     st.subheader(f"📊 {aggregation} — {metric_name}")
     st.dataframe(annual, use_container_width=True, hide_index=True)
@@ -300,4 +425,4 @@ else:
     st.markdown("1. Chuẩn bị Excel gồm **Ngày, Q (m³/s), H (m), Mưa (mm)**.\n2. Ở thanh bên trái chọn **Tải Excel theo ngày** và tải file lên.\n3. Chọn chỉ tiêu Q/H/Mưa và cách tổng hợp theo năm.\n4. Xem **Quan trắc hằng ngày**, **Thống kê năm**, **Đường tần suất P-III**.\n5. Điều chỉnh Cv/Cs, xuất Excel hoặc PNG.\n6. Khi có số liệu ngày mới, **thêm vào file Excel gốc rồi tải lại**.")
     st.warning("Không dùng chuỗi dữ liệu ngày như các mẫu độc lập cho tần suất cực trị năm. Phân tích thiết kế cần chuỗi đủ dài, đầy đủ và được kiểm định.")
 st.divider()
-st.caption("VINH TRAN APP • THỦY VĂN P-III 4.0 • Số liệu mẫu để thử nghiệm; kết quả không thay thế thẩm định kỹ thuật.")
+st.caption("VINH TRAN APP • THỦY VĂN P-III 4.1 • Số liệu mẫu để thử nghiệm; kết quả không thay thế thẩm định kỹ thuật.")
