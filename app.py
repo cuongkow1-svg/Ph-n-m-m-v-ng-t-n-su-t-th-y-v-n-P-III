@@ -86,7 +86,7 @@ pages=st.tabs(['🏠 Tổng quan','📋 Số liệu','📈 Biểu đồ','📘 B
 with pages[0]:
     a,b,c,d=st.columns(4)
     a.metric('Số giá trị',len(values));b.metric(f'Trung bình ({unit})',f'{mean:,.2f}');c.metric('Cv',f'{cv:.3f}');d.metric('Cs',f'{cs:.3f}')
-    st.plotly_chart(fig,use_container_width=True)
+    st.plotly_chart(fig,use_container_width=True,key="bieu_do_tong_quan")
     st.caption('Trục P dùng phép biến đổi xác suất chuẩn. Đường P-III được tính từ phân phối Gamma; không phải bản số hóa giấy xác suất chuyên ngành.')
 with pages[1]:
     st.subheader('Bảng tần suất kinh nghiệm')
