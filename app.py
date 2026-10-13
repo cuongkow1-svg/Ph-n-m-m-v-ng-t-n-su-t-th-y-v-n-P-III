@@ -94,7 +94,7 @@ with pages[1]:
     st.caption('Công thức vị trí vẽ: P = m/(n+1) × 100%. Dùng cho chuỗi cực đại năm.')
 with pages[2]:
     st.subheader('Đường tần suất kinh nghiệm và lý luận')
-    st.plotly_chart(fig,use_container_width=True)
+    st.plotly_chart(fig,use_container_width=True,key="bieu_do_tan_suat_chinh")
     st.caption('Lưu hình PNG bằng biểu tượng máy ảnh trên thanh công cụ biểu đồ (nếu trình duyệt hỗ trợ).')
 with pages[3]:
     st.subheader('Bảng Φp – Kp – giá trị thiết kế')
