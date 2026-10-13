@@ -75,7 +75,7 @@ div[data-testid="stVerticalBlockBorderWrapper"] {{box-shadow:0 4px 16px #0c46701
  .hero h1 {{font-size:1.55rem}}
 }}
 </style>""",unsafe_allow_html=True)
-st.markdown('<div class="hero"><div class="brand">VINH TRAN APP</div><h1>🌊 THỦY VĂN P-III <span style="font-size:15px;background:#ffffff24;padding:5px 10px;border-radius:15px">PRO 4.1</span></h1><p>QUAN TRẮC Q · H · MƯA HẰNG NGÀY • TẦN SUẤT PEARSON III</p></div>',unsafe_allow_html=True)
+st.markdown('<div class="hero"><div class="brand">VINH TRAN APP</div><h1>🌊 THỦY VĂN P-III <span style="font-size:15px;background:#ffffff24;padding:5px 10px;border-radius:15px">PRO 4.1.2</span></h1><p>QUAN TRẮC Q · H · MƯA HẰNG NGÀY • TẦN SUẤT PEARSON III</p></div>',unsafe_allow_html=True)
 
 
 COL_DATE = "Ngày"
@@ -118,7 +118,7 @@ def parse_daily_excel(uploaded_file):
 
 with st.sidebar:
     st.markdown("## 🌊 VINH TRAN APP")
-    st.caption("THỦY VĂN P-III • PHIÊN BẢN 4.1")
+    st.caption("THỦY VĂN P-III • PHIÊN BẢN 4.1.2")
     section = st.radio("DANH MỤC", ["🏠 Tổng quan", "🔎 Tra cứu số liệu", "💾 Kho dữ liệu", "📅 Quan trắc hằng ngày", "📋 Nhập số liệu", "📊 Thống kê năm", "📈 Đường tần suất P-III", "📘 Bảng Φp", "📥 Xuất kết quả", "❔ Hướng dẫn"], label_visibility="collapsed")
     st.divider()
     st.markdown("### ⚙️ DỰ ÁN & DỮ LIỆU")
@@ -229,7 +229,7 @@ last_date = daily[COL_DATE].max().date()
 
 with st.sidebar:
     st.markdown("### 📅 LỌC NGÀY")
-    chosen = st.date_input("Khoảng ngày xem biểu đồ", value=(first_date, last_date), min_value=first_date, max_value=last_date)
+    chosen = st.date_input("Khoảng ngày xem biểu đồ", value=(first_date, max(last_date, date.today())), min_value=date(1900, 1, 1), max_value=date(2100, 12, 31))
 if isinstance(chosen, (tuple, list)) and len(chosen) == 2:
     begin, end = chosen
 else:
@@ -347,7 +347,8 @@ elif section == "🔎 Tra cứu số liệu":
     with c1:
         lookup_start = st.date_input("Từ ngày", value=first_date, min_value=date(1900, 1, 1), max_value=date(2100, 12, 31), key="lookup_from")
     with c2:
-        lookup_end = st.date_input("Đến ngày", value=last_date, min_value=date(1900, 1, 1), max_value=date(2100, 12, 31), key="lookup_to")
+        lookup_end = st.date_input("Đến ngày", value=max(last_date, date.today()), min_value=date(1900, 1, 1), max_value=date(2100, 12, 31), key="lookup_to")
+    st.caption(f"Dữ liệu hiện có: {first_date:%d/%m/%Y} – {last_date:%d/%m/%Y}. Bạn có thể chọn ngày đến năm 2100; các ngày chưa có số liệu sẽ không xuất hiện trong bảng.")
     if lookup_start > lookup_end:
         st.error("Ngày bắt đầu phải trước hoặc bằng ngày kết thúc.")
     else:
@@ -428,4 +429,4 @@ else:
     st.markdown("1. Chuẩn bị Excel gồm **Ngày, Q (m³/s), H (m), Mưa (mm)**.\n2. Ở thanh bên trái chọn **Tải Excel theo ngày** và tải file lên.\n3. Chọn chỉ tiêu Q/H/Mưa và cách tổng hợp theo năm.\n4. Xem **Quan trắc hằng ngày**, **Thống kê năm**, **Đường tần suất P-III**.\n5. Điều chỉnh Cv/Cs, xuất Excel hoặc PNG.\n6. Khi có số liệu ngày mới, **thêm vào file Excel gốc rồi tải lại**.")
     st.warning("Không dùng chuỗi dữ liệu ngày như các mẫu độc lập cho tần suất cực trị năm. Phân tích thiết kế cần chuỗi đủ dài, đầy đủ và được kiểm định.")
 st.divider()
-st.caption("VINH TRAN APP • THỦY VĂN P-III 4.1 • Số liệu mẫu để thử nghiệm; kết quả không thay thế thẩm định kỹ thuật.")
+st.caption("VINH TRAN APP • THỦY VĂN P-III 4.1.2 • Số liệu mẫu để thử nghiệm; kết quả không thay thế thẩm định kỹ thuật.")
