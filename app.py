@@ -343,31 +343,43 @@ if section == "🏠 Tổng quan":
 elif section == "🔎 Tra cứu số liệu":
     st.subheader("🔎 Tra cứu Q – H – Mưa theo ngày")
     st.caption("Tra cứu từ nguồn dữ liệu đã chọn ở menu bên trái: Excel đang tải lên hoặc kho đã lưu.")
-    c1,c2 = st.columns(2)
+    c1, c2 = st.columns(2)
     with c1:
-        lookup_start = st.date_input("Từ ngày", value=first_date, min_value=date(1900, 1, 1), max_value=date(2100, 12, 31), key="lookup_from")
+        lookup_start = st.date_input("Từ ngày", value=first_date,
+                                     min_value=date(1900, 1, 1), max_value=date(2100, 12, 31), key="lookup_from")
     with c2:
-        lookup_end = st.date_input("Đến ngày", value=max(last_date, date.today()), min_value=date(1900, 1, 1), max_value=date(2100, 12, 31), key="lookup_to")
-    st.caption(f"Dữ liệu hiện có: {first_date:%d/%m/%Y} – {last_date:%d/%m/%Y}. Bạn có thể chọn ngày đến năm 2100; các ngày chưa có số liệu sẽ không xuất hiện trong bảng.")
+        lookup_end = st.date_input("Đến ngày", value=max(last_date, min(date.today(), date(2100, 12, 31))),
+                                   min_value=date(1900, 1, 1), max_value=date(2100, 12, 31), key="lookup_to")
+    st.caption(f"Dữ liệu hiện có: {first_date:%d/%m/%Y} – {last_date:%d/%m/%Y}. Ngày chưa có quan trắc sẽ hiển thị ô trống, không phải số 0.")
     if lookup_start > lookup_end:
         st.error("Ngày bắt đầu phải trước hoặc bằng ngày kết thúc.")
     else:
-        lookup = daily.loc[daily[COL_DATE].dt.date.between(lookup_start,lookup_end)].copy()
-        search_metric = st.selectbox("Chỉ tiêu cần xem", ["Cả ba chỉ tiêu"]+list(METRICS.keys()))
+        # Tạo lịch liên tục trong khoảng tra cứu, kể cả những ngày không có số liệu.
+        calendar = pd.DataFrame({COL_DATE: pd.date_range(lookup_start, lookup_end, freq="D")})
+        observations = daily[[COL_DATE] + [v[0] for v in METRICS.values()]].copy()
+        observations[COL_DATE] = pd.to_datetime(observations[COL_DATE]).dt.normalize()
+        lookup = calendar.merge(observations, on=COL_DATE, how="left", validate="one_to_one")
+        search_metric = st.selectbox("Chỉ tiêu cần xem", ["Cả ba chỉ tiêu"] + list(METRICS.keys()))
         if search_metric != "Cả ba chỉ tiêu":
             lookup = lookup[[COL_DATE, METRICS[search_metric][0]]]
-        st.metric("Số ngày tìm thấy",len(lookup))
-        if lookup.empty:
-            st.info("Không có dữ liệu trong khoảng thời gian đã chọn.")
-        st.dataframe(lookup,use_container_width=True,hide_index=True)
-        if not lookup.empty:
-            st.download_button("📥 Xuất kết quả tra cứu (.csv)",lookup.to_csv(index=False).encode("utf-8-sig"),
-                               file_name="Tra_cuu_thuy_van.csv",mime="text/csv",key="lookup_csv")
-            numeric = lookup.select_dtypes(include="number")
-            if not numeric.empty:
-                for c in numeric.columns:
-                    idxmax = numeric[c].idxmax()
-                    st.write(f"**{c}:** lớn nhất {numeric.loc[idxmax,c]:,.2f} vào {lookup.loc[idxmax,COL_DATE]:%d/%m/%Y}")
+        value_columns = [c for c in lookup.columns if c != COL_DATE]
+        has_observation = lookup[value_columns].notna().any(axis=1)
+        m1, m2, m3 = st.columns(3)
+        m1.metric("Tổng số ngày hiển thị", f"{len(lookup):,}")
+        m2.metric("Ngày có số liệu", f"{int(has_observation.sum()):,}")
+        m3.metric("Ngày chưa có số liệu", f"{int((~has_observation).sum()):,}")
+        if not has_observation.any():
+            st.info("Khoảng thời gian đã chọn chưa có số liệu quan trắc. Các dòng ngày vẫn được hiển thị để tiện theo dõi.")
+        st.dataframe(lookup, use_container_width=True, hide_index=True,
+                     column_config={COL_DATE: st.column_config.DateColumn("Ngày", format="DD/MM/YYYY")})
+        st.download_button("📥 Xuất kết quả tra cứu (.csv)",
+                           lookup.to_csv(index=False, date_format="%d/%m/%Y").encode("utf-8-sig"),
+                           file_name="Tra_cuu_thuy_van.csv", mime="text/csv", key="lookup_csv")
+        for c in value_columns:
+            valid = lookup[c].dropna()
+            if not valid.empty:
+                idxmax = valid.idxmax()
+                st.write(f"**{c}:** lớn nhất {valid.loc[idxmax]:,.2f} vào {lookup.loc[idxmax, COL_DATE]:%d/%m/%Y}")
 elif section == "💾 Kho dữ liệu":
     st.subheader("💾 Lưu và tra cứu dữ liệu lâu dài")
     st.info("Kho trực tuyến dùng Supabase. Tải Excel lên trước, sau đó bấm lưu. Trùng ngày sẽ cập nhật theo dữ liệu Excel mới.")
