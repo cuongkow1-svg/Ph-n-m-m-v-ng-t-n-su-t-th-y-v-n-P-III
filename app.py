@@ -1,4 +1,6 @@
 import io
+import base64
+from pathlib import Path
 import numpy as np
 import pandas as pd
 import plotly.graph_objects as go
@@ -6,34 +8,48 @@ import streamlit as st
 from scipy.stats import gamma, norm
 
 st.set_page_config(page_title="THỦY VĂN P-III | HydroStat Pro", page_icon="🌊", layout="wide", initial_sidebar_state="expanded")
-st.markdown("""<style>
-:root {--navy:#0c3158;--blue:#0e72ce}
-[data-testid="stAppViewContainer"] {background:#f2f6fb}
-[data-testid="stSidebar"] {background:linear-gradient(160deg,#092c50,#124b7d 68%,#09243d)}
-[data-testid="stSidebar"] * {color:#f5faff!important}
-[data-testid="stSidebar"] div[data-baseweb="select"] * {color:#102d49!important}
-[data-testid="stSidebar"] input {color:#142e48!important}
-[data-testid="stSidebar"] textarea {color:#142e48!important}
-.block-container {max-width:1550px;padding-top:1.0rem;padding-bottom:2rem}
-h1,h2,h3 {color:#0b3d70!important;letter-spacing:-.02em}
-div[data-testid="stMetric"] {background:#fff;border:1px solid #dce8f5;border-radius:14px;padding:13px 16px;box-shadow:0 3px 13px #133d6610}
-div[data-testid="stMetricLabel"] {color:#5b7187}
-div[data-testid="stMetricValue"] {color:#123f6b}
-div[data-testid="stVerticalBlockBorderWrapper"] > div {border-radius:16px!important}
-.stButton>button[kind="primary"], .stDownloadButton>button[kind="primary"] {background:#0878d7;border-radius:9px}
-[data-testid="stDataFrame"] {border-radius:10px;overflow:hidden}
-.hero {padding:24px 28px;border-radius:18px;color:white;background:linear-gradient(105deg,#082947,#145b91 70%,#2a8aca);margin-bottom:18px;box-shadow:0 8px 24px #15467522}
-.hero h1 {color:white!important;margin:0;font-size:2.05rem}
-.hero .brand {font-size:1.0rem;font-weight:800;letter-spacing:.24em;color:#a7e5ff;margin-bottom:9px;text-transform:uppercase}
-.hero p {color:#d4eafb;margin:6px 0 0}
-.section {font-size:1.12rem;font-weight:750;color:#0d457a;margin:12px 0}
-.note {color:#60768d;font-size:.87rem}
+def image_css(filename):
+    path = Path(__file__).resolve().parent / filename
+    return base64.b64encode(path.read_bytes()).decode("ascii") if path.exists() else ""
+
+hero_image = image_css("anh_ho_chua_dau_trang.jpg")
+sidebar_image = image_css("anh_ho_chua_menu.jpg")
+st.markdown(f"""<style>
+:root {{--navy:#0c3158;--blue:#0e72ce}}
+[data-testid="stAppViewContainer"] {{background:#f2f6fb}}
+[data-testid="stSidebar"] {{
+ background:linear-gradient(180deg,#06284e 0%,#0c4c86 57%,rgba(7,35,65,.20) 100%),url("data:image/jpeg;base64,{sidebar_image}") bottom center / 100% auto no-repeat,#092d53;
+ border-right:1px solid #ffffff22;
+}}
+[data-testid="stSidebar"] * {{color:#f5faff!important}}
+[data-testid="stSidebar"] div[data-baseweb="select"] * {{color:#102d49!important}}
+[data-testid="stSidebar"] input {{color:#142e48!important}}
+[data-testid="stSidebar"] textarea {{color:#142e48!important}}
+.block-container {{max-width:1550px;padding-top:1.0rem;padding-bottom:2rem}}
+h1,h2,h3 {{color:#0b3d70!important;letter-spacing:-.02em}}
+div[data-testid="stMetric"] {{background:#fff;border:1px solid #dce8f5;border-radius:14px;padding:13px 16px;box-shadow:0 3px 13px #133d6610}}
+div[data-testid="stMetricLabel"] {{color:#5b7187}}
+div[data-testid="stMetricValue"] {{color:#123f6b}}
+div[data-testid="stVerticalBlockBorderWrapper"] > div {{border-radius:16px!important}}
+.stButton>button[kind="primary"], .stDownloadButton>button[kind="primary"] {{background:#0878d7;border-radius:9px}}
+[data-testid="stDataFrame"] {{border-radius:10px;overflow:hidden}}
+.hero {{padding:22px 30px;border-radius:15px;color:white;background:linear-gradient(90deg,#06274c 0%,#083f70 34%,rgba(8,53,88,.25) 100%),url("data:image/jpeg;base64,{hero_image}") center / cover no-repeat,#0a3a66;margin-bottom:18px;box-shadow:0 8px 24px #15467522;min-height:135px;display:flex;flex-direction:column;justify-content:center}}
+.hero h1 {{color:white!important;margin:0;font-size:2.05rem}}
+.hero .brand {{font-size:1.0rem;font-weight:800;letter-spacing:.24em;color:#a7e5ff;margin-bottom:9px;text-transform:uppercase}}
+.hero p {{color:#d4eafb;margin:6px 0 0}}
+.section {{font-size:1.12rem;font-weight:750;color:#0d457a;margin:12px 0}}
+.note {{color:#60768d;font-size:.87rem}}
+[data-testid="stSidebar"] div[role="radiogroup"] label:has(input:checked) {{background:#1479db;border-radius:10px}}
+[data-testid="stSidebar"] div[role="radiogroup"] label {{padding:7px 10px;transition:background .2s}}
+div[data-testid="stMetric"] {{border-top:3px solid #1983d8}}
+div[data-testid="stVerticalBlockBorderWrapper"] {{box-shadow:0 4px 16px #0c467010}}
+.stDownloadButton button {{border-radius:9px}}
 </style>""",unsafe_allow_html=True)
-st.markdown('<div class="hero"><div class="brand">VINH TRAN APP</div><h1>🌊 THỦY VĂN P-III <span style="font-size:15px;background:#ffffff24;padding:5px 10px;border-radius:15px">PRO 3.0</span></h1><p>PHÂN TÍCH TẦN SUẤT THỦY VĂN • PEARSON III • BẢNG TÍNH THIẾT KẾ</p></div>',unsafe_allow_html=True)
+st.markdown('<div class="hero"><div class="brand">VINH TRAN APP</div><h1>🌊 THỦY VĂN P-III <span style="font-size:15px;background:#ffffff24;padding:5px 10px;border-radius:15px">PRO 3.2</span></h1><p>PHÂN TÍCH TẦN SUẤT THỦY VĂN • PEARSON III • BẢNG TÍNH THIẾT KẾ</p></div>',unsafe_allow_html=True)
 
 with st.sidebar:
     st.markdown("## 🌊 VINH TRAN APP")
-    st.caption("Phần mềm phân tích tần suất thủy văn")
+    st.caption("THỦY VĂN P-III • PHIÊN BẢN 3.2")
     section=st.radio("DANH MỤC",["🏠 Tổng quan","📋 Nhập số liệu","📊 Phân tích thống kê","📈 Đường tần suất P-III","📘 Bảng tra Φp","📥 Xuất kết quả","❔ Hướng dẫn"],label_visibility="collapsed")
     st.divider()
     st.markdown("### ⚙️ THIẾT LẬP")
@@ -195,4 +211,4 @@ else:
     st.warning("Công cụ tham khảo, chưa được kiểm định theo quy chuẩn thiết kế và bảng tra Việt Nam.")
 
 st.divider()
-st.caption("HYDROSTAT PRO 3.0 • Phân phối P-III qua Gamma • Số liệu mẫu không dùng cho thiết kế chính thức. Không dùng kết quả để phê duyệt công trình khi chưa được kiểm chứng.")
+st.caption("HYDROSTAT PRO 3.2 • Phân phối P-III qua Gamma • Số liệu mẫu không dùng cho thiết kế chính thức. Không dùng kết quả để phê duyệt công trình khi chưa được kiểm chứng.")
