@@ -24,14 +24,15 @@ div[data-testid="stVerticalBlockBorderWrapper"] > div {border-radius:16px!import
 [data-testid="stDataFrame"] {border-radius:10px;overflow:hidden}
 .hero {padding:24px 28px;border-radius:18px;color:white;background:linear-gradient(105deg,#082947,#145b91 70%,#2a8aca);margin-bottom:18px;box-shadow:0 8px 24px #15467522}
 .hero h1 {color:white!important;margin:0;font-size:2.05rem}
+.hero .brand {font-size:1.0rem;font-weight:800;letter-spacing:.24em;color:#a7e5ff;margin-bottom:9px;text-transform:uppercase}
 .hero p {color:#d4eafb;margin:6px 0 0}
 .section {font-size:1.12rem;font-weight:750;color:#0d457a;margin:12px 0}
 .note {color:#60768d;font-size:.87rem}
 </style>""",unsafe_allow_html=True)
-st.markdown('<div class="hero"><h1>🌊 THỦY VĂN P-III <span style="font-size:15px;background:#ffffff24;padding:5px 10px;border-radius:15px">PRO 3.0</span></h1><p>PHÂN TÍCH TẦN SUẤT THỦY VĂN • PEARSON III • BẢNG TÍNH THIẾT KẾ</p></div>',unsafe_allow_html=True)
+st.markdown('<div class="hero"><div class="brand">VINH TRAN APP</div><h1>🌊 THỦY VĂN P-III <span style="font-size:15px;background:#ffffff24;padding:5px 10px;border-radius:15px">PRO 3.0</span></h1><p>PHÂN TÍCH TẦN SUẤT THỦY VĂN • PEARSON III • BẢNG TÍNH THIẾT KẾ</p></div>',unsafe_allow_html=True)
 
 with st.sidebar:
-    st.markdown("## 🌊 HYDROSTAT PRO")
+    st.markdown("## 🌊 VINH TRAN APP")
     st.caption("Phần mềm phân tích tần suất thủy văn")
     section=st.radio("DANH MỤC",["🏠 Tổng quan","📋 Nhập số liệu","📊 Phân tích thống kê","📈 Đường tần suất P-III","📘 Bảng tra Φp","📥 Xuất kết quả","❔ Hướng dẫn"],label_visibility="collapsed")
     st.divider()
